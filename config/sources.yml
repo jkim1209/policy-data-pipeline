@@ -28,6 +28,19 @@ sources:
     params: { country: "KOR;JPN;FRA;DEU;ITA;ESP;USA", indicator: SP.DYN.TFRT.IN, date: "2015:2025", per_page: 500, format: json }
     sample: raw/sample/wb_tfr.json
 
+  - id: kosis_births
+    name: KOSIS 인구동향조사 — 시도/출생아수
+    kind: api
+    indicator_code: BIRTHS
+    unit: 명                      # 응답에 UNIT_NM 이 없습니다. 여기서 부여합니다
+    vintage: 확정
+    region_level: 시도
+    endpoint: https://kosis.kr/openapi/Param/statisticsParameterData.do
+    auth: { required: true, param: apiKey, env: KOSIS_API_KEY }
+    params: { method: getList, orgId: "101", tblId: DT_1B8000H, itmId: T10, objL1: ALL,
+              prdSe: Y, startPrdDe: "2015", endPrdDe: "2025", format: json, jsonVD: "Y" }
+    sample: raw/sample/kosis_births_DT_1B8000H.json
+
   - id: policy_brief
     name: 정책브리핑 — 지자체 출산지원정책
     kind: web
@@ -38,7 +51,12 @@ sources:
     sample: raw/sample/policy_brief.json
 
 validation:
-  value_range: { TFR: [0, 3], SP.DYN.TFRT.IN: [0, 8], POLICY_COUNT: [0, 500] }
+  value_range: { TFR: [0, 3], SP.DYN.TFRT.IN: [0, 8], POLICY_COUNT: [0, 500],
+                 BIRTHS: [0, 600000] }
+  # BIRTHS 범위 근거 (2026-09-16 사용자 확정)
+  #   KOSIS DT_1B8000H/T10 실측 2015~2025: 전국 230,028~438,420 · 시도별 2,708~113,495
+  #   상한 600,000 은 과거 60만대 수준까지 덮는 값. 시도 기준으로 잡았던 200,000 을
+  #   전국값이 초과해 바로잡은 것이며, 검사를 느슨하게 한 것이 아닙니다.
   expected_regions_시도: 17
   expected_years: [2015, 2025]
   yoy_change_limit: 0.30

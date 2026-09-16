@@ -1,0 +1,97 @@
+{
+  "소스명": "World Bank Indicators API",
+  "출처_문서": "exercises/02/worldbank-doc.md (문서 발췌, 실습용)",
+  "엔드포인트": "https://api.worldbank.org/v2/country/{country}/indicator/{indicator}",
+  "인증": "불필요. 문서 명시: 'No API key is required. Requests are not authenticated.'",
+  "필수_파라미터": {
+    "_비고": "문서가 필수/선택을 명시적으로 구분하지는 않음. 아래 둘은 경로(path) 구성요소라 생략 불가.",
+    "country": "ISO 3166-1 alpha-3. 복수는 세미콜론(;)으로 연결. 전체는 'all'",
+    "indicator": "World Bank 지표 코드. 예: SP.DYN.TFRT.IN"
+  },
+  "선택_파라미터": {
+    "_비고": "문서의 Query parameters 표에 나열된 항목",
+    "format": "json 또는 xml. 기본값 xml",
+    "date": "연도 또는 범위. 예: 2015 또는 2015:2025",
+    "per_page": "페이지당 레코드 수. 기본값 50",
+    "page": "페이지 번호. 1부터 시작"
+  },
+  "응답_최상위_구조": "원소 2개짜리 배열. [0]은 페이징 정보 객체(page, pages, per_page, total, lastupdated), [1]은 관측치 객체 배열(indicator, country, countryiso3code, date, value, unit, obs_status, decimal)",
+  "data_path": "[1]",
+  "페이지_처리": "문서에 순회 절차 없음. 페이징 관련 필드로 page, pages, per_page, total 이 [0]에 제공된다고만 기술됨",
+  "결측_표기": "value 가 null",
+  "호출_제한": "문서에 없음",
+  "출처_표기_문구": "문서에 없음",
+  "최종_확인": "2026-09-16. 이 세션에서 실호출 검증(country=KOR;JPN;FRA;DEU;ITA;ESP;USA, date=2015:2025, per_page=500 → total=77, 77행 수신)",
+  "문서에서_확인되지_않아_보류한_사항": [
+    "필수/선택 파라미터의 공식 구분",
+    "에러 응답의 형태와 판별 방법",
+    "호출 제한(rate limit) 수치",
+    "출처 표기(인용) 문구",
+    "format 을 생략했을 때 오는 XML 의 구조"
+  ],
+  "verified_at": "2026-09-16T15:09:51+09:00",
+  "verified_result": {
+    "판정": "일치",
+    "요청": {
+      "url": "https://api.worldbank.org/v2/country/KOR/indicator/SP.DYN.TFRT.IN",
+      "params": {
+        "format": "json",
+        "date": "2015:2025"
+      },
+      "인증": "없음",
+      "http_status": 200
+    },
+    "검사": [
+      {
+        "검사": "HTTP 200",
+        "기대(명세서)": "200",
+        "실제(응답)": "200",
+        "판정": "통과"
+      },
+      {
+        "검사": "JSON 파싱",
+        "기대(명세서)": "format=json 이면 JSON",
+        "실제(응답)": "list 파싱 성공",
+        "판정": "통과"
+      },
+      {
+        "검사": "응답 최상위 구조",
+        "기대(명세서)": "원소 2개 배열, [0]=dict, [1]=list",
+        "실제(응답)": "list len=2, [0]=dict, [1]=list",
+        "판정": "통과"
+      },
+      {
+        "검사": "data_path 로 관측치 도달",
+        "기대(명세서)": "[1] 가 관측치 배열",
+        "실제(응답)": "[1] → list, 11건, 원소는 dict",
+        "판정": "통과"
+      },
+      {
+        "검사": "필수 키 존재 · 메타",
+        "기대(명세서)": "5개 ['page', 'pages', 'per_page', 'total', 'lastupdated']",
+        "실제(응답)": "누락 없음",
+        "판정": "통과"
+      },
+      {
+        "검사": "필수 키 존재 · 관측치 전 행",
+        "기대(명세서)": "8개 ['indicator', 'country', 'countryiso3code', 'date', 'value', 'unit', 'obs_status', 'decimal']",
+        "실제(응답)": "11행 모두 보유",
+        "판정": "통과"
+      },
+      {
+        "검사": "페이지 여유",
+        "기대(명세서)": "받은 행 == total 이면 전량",
+        "실제(응답)": "total=11 per_page=50 page=1 pages=1 받은행=11 → 뒷장 없음",
+        "판정": "통과"
+      }
+    ],
+    "통과": 7,
+    "실패": 0,
+    "검증_스크립트": "exercises/02/verify_spec.py",
+    "응답_요약": {
+      "total": 11,
+      "per_page": 50,
+      "rows": 11
+    }
+  }
+}

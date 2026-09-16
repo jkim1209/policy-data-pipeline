@@ -52,10 +52,16 @@ def from_kosis(payload, src, region_map, unmapped):
             unmapped.append({"항목": name, "종류": "지역명", "소스": src["id"]})
             continue
         raw = (x.get("DT") or "").strip()
-        value = float(raw) if raw else None
+        # 결측 표기가 두 가지입니다. 빈 문자열과 '-'.
+        # DT_1B8000H(시도/출생아수)는 '-' 로 옵니다. references/api-registry.md 참고.
+        value = None if raw in ("", "-") else float(raw.replace(",", ""))
         out.append(_row(
             "KOSIS", src["indicator_code"], code, x["PRD_DE"], value,
-            x.get("UNIT_NM") or src["unit"], src["vintage"],
+            # UNIT_NM 을 쓰지 않습니다. DT_1B81A21 은 표에 있는 8개 항목의 단위를
+            # 이어붙인 문자열을 돌려주고(예: '가임여자 1명당 명 해당 연령 여자인구
+            # 1천 명당 명'), DT_1B8000H 는 아예 없습니다(None).
+            # config/sources.yml 에 선언한 단위가 기준입니다. api-registry.md 참고.
+            src["unit"], src["vintage"],
             src["endpoint"], None if value is not None else "NA_NOTSURVEYED",
         ))
     return out
